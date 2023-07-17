@@ -3,10 +3,11 @@ import "./styles/globals.scss";
 import "./styles/markdown.scss";
 import "./styles/highlight.scss";
 import { getClientConfig } from "./config/client";
+import { type Metadata } from 'next';
 
-export const metadata = {
-  title: "FactoGPT",
-  description: "Your efficient AI assistant. Powered by Facto.",
+export const metadata: Metadata = {
+  title: "ChatGPT Next Web",
+  description: "Your personal ChatGPT Chat Bot.",
   viewport: {
     width: "device-width",
     initialScale: 1,
@@ -17,7 +18,7 @@ export const metadata = {
     { media: "(prefers-color-scheme: dark)", color: "#151515" },
   ],
   appleWebApp: {
-    title: "FactoGPT",
+    title: "ChatGPT Next Web",
     statusBarStyle: "default",
   },
 };
@@ -32,8 +33,6 @@ export default function RootLayout({
       <head>
         <meta name="config" content={JSON.stringify(getClientConfig())} />
         <link rel="manifest" href="/site.webmanifest"></link>
-        <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js" defer></script>
-        <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js" defer></script>
         <script src="/serviceWorkerRegister.js" defer></script>
       </head>
       <body>{children}</body>
