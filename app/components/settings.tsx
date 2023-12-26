@@ -52,6 +52,7 @@ import { copyToClipboard } from "../utils";
 import Link from "next/link";
 import {
   Azure,
+  Google,
   OPENAI_BASE_URL,
   Path,
   RELEASE_URL,
@@ -491,7 +492,41 @@ function SyncItems() {
   return (
     <>
       <List>
-
+        <ListItem
+          title={Locale.Settings.Sync.CloudState}
+          subTitle={
+            syncStore.lastProvider
+              ? `${new Date(syncStore.lastSyncTime).toLocaleString()} [${
+                  syncStore.lastProvider
+                }]`
+              : Locale.Settings.Sync.NotSyncYet
+          }
+        >
+          <div style={{ display: "flex" }}>
+            <IconButton
+              icon={<ConfigIcon />}
+              text={Locale.UI.Config}
+              onClick={() => {
+                setShowSyncConfigModal(true);
+              }}
+            />
+            {couldSync && (
+              <IconButton
+                icon={<ResetIcon />}
+                text={Locale.UI.Sync}
+                onClick={async () => {
+                  try {
+                    await syncStore.sync();
+                    showToast(Locale.Settings.Sync.Success);
+                  } catch (e) {
+                    showToast(Locale.Settings.Sync.Fail);
+                    console.error("[Sync]", e);
+                  }
+                }}
+              />
+            )}
+          </div>
+        </ListItem>
 
         <ListItem
           title={Locale.Settings.Sync.LocalState}
@@ -549,6 +584,7 @@ export function Settings() {
   const accessStore = useAccessStore();
   const shouldHideBalanceQuery = useMemo(() => {
     const isOpenAiUrl = accessStore.openaiUrl.includes(OPENAI_BASE_URL);
+
     return (
       accessStore.hideBalanceQuery ||
       isOpenAiUrl ||
@@ -601,7 +637,8 @@ export function Settings() {
         navigate(Path.Home);
       }
     };
-    if (clientConfig?.isApp) { // Force to set custom endpoint to true if it's app
+    if (clientConfig?.isApp) {
+      // Force to set custom endpoint to true if it's app
       accessStore.update((state) => {
         state.useCustomConfig = true;
       });
@@ -663,7 +700,30 @@ export function Settings() {
             </Popover>
           </ListItem>
 
-         
+          <ListItem
+            title={Locale.Settings.Update.Version(currentVersion ?? "unknown")}
+            subTitle={
+              checkingUpdate
+                ? Locale.Settings.Update.IsChecking
+                : hasNewVersion
+                ? Locale.Settings.Update.FoundUpdate(remoteId ?? "ERROR")
+                : Locale.Settings.Update.IsLatest
+            }
+          >
+            {checkingUpdate ? (
+              <LoadingIcon />
+            ) : hasNewVersion ? (
+              <Link href={updateUrl} target="_blank" className="link">
+                {Locale.Settings.Update.GoToUpdate}
+              </Link>
+            ) : (
+              <IconButton
+                icon={<ResetIcon></ResetIcon>}
+                text={Locale.Settings.Update.CheckUpdate}
+                onClick={() => checkUpdate(true)}
+              />
+            )}
+          </ListItem>
 
           <ListItem title={Locale.Settings.SendKey}>
             <Select
@@ -940,7 +1000,7 @@ export function Settings() {
                         />
                       </ListItem>
                     </>
-                  ) : (
+                  ) : accessStore.provider === "Azure" ? (
                     <>
                       <ListItem
                         title={Locale.Settings.Access.Azure.Endpoint.Title}
@@ -999,7 +1059,66 @@ export function Settings() {
                         ></input>
                       </ListItem>
                     </>
-                  )}
+                  ) : accessStore.provider === "Google" ? (
+                    <>
+                      <ListItem
+                        title={Locale.Settings.Access.Google.Endpoint.Title}
+                        subTitle={
+                          Locale.Settings.Access.Google.Endpoint.SubTitle +
+                          Google.ExampleEndpoint
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.googleUrl}
+                          placeholder={Google.ExampleEndpoint}
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.googleUrl = e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                      <ListItem
+                        title={Locale.Settings.Access.Azure.ApiKey.Title}
+                        subTitle={Locale.Settings.Access.Azure.ApiKey.SubTitle}
+                      >
+                        <PasswordInput
+                          value={accessStore.googleApiKey}
+                          type="text"
+                          placeholder={
+                            Locale.Settings.Access.Google.ApiKey.Placeholder
+                          }
+                          onChange={(e) => {
+                            accessStore.update(
+                              (access) =>
+                                (access.googleApiKey = e.currentTarget.value),
+                            );
+                          }}
+                        />
+                      </ListItem>
+                      <ListItem
+                        title={Locale.Settings.Access.Google.ApiVerion.Title}
+                        subTitle={
+                          Locale.Settings.Access.Google.ApiVerion.SubTitle
+                        }
+                      >
+                        <input
+                          type="text"
+                          value={accessStore.googleApiVersion}
+                          placeholder="2023-08-01-preview"
+                          onChange={(e) =>
+                            accessStore.update(
+                              (access) =>
+                                (access.googleApiVersion =
+                                  e.currentTarget.value),
+                            )
+                          }
+                        ></input>
+                      </ListItem>
+                    </>
+                  ) : null}
                 </>
               )}
             </>
