@@ -1,6 +1,6 @@
 @mixin container {
   background-color: var(--white);
-  border: var(--border-in-light);
+
   border-radius: 20px;
   box-shadow: var(--shadow);
   color: var(--black);
@@ -45,7 +45,7 @@
   background-color: var(--second);
   display: flex;
   flex-direction: column;
-  box-shadow: inset -2px 0px 2px 0px rgb(0, 0, 0, 0.05);
+ 
   position: relative;
   transition: width ease 0.05s;
 
